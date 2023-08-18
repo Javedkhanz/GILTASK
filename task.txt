@@ -1,0 +1,6 @@
+Web Application development domain:
+Task 1: Fetch this open-source API (see below) to download json data of
+buildings. Show the markers on the map (Leaflet or google maps). Create a
+method if markers are nearby each other than their color should be red (see
+fig1). Otherwise default blue color (see fig2).
+https://api.npoint.io/f26432e9e880999eeb1b

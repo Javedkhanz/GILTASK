@@ -1,0 +1,79 @@
+<!-- <!DOCTYPE html>
+<html>
+
+<head>
+    <title>Building Markers with Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+
+<body>
+    <div id="map" style="height: 400px;"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Inside the <script> tag
+        var map = L.map('map').setView([0, 0], 2); // Set initial map view
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        fetch('https://api.npoint.io/f26432e9e880999eeb1b')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(building => {
+                    var marker = L.marker([building.latitude, building.longitude]).addTo(map);
+                    marker.bindPopup(`<b>${building.name}</b><br>${building.address}`);
+                });
+            });
+    </script>
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Building Markers with Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+
+<body>
+    <div id="map" style="height: 400px;"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Inside the <script> tag
+        var map = L.map('map').setView([0, 0], 2); // Set initial map view
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        function calculateDistance(latlng1, latlng2) {
+            return latlng1.distanceTo(latlng2); // Using Leaflet's built-in distance calculation
+        }
+
+        fetch('https://api.npoint.io/f26432e9e880999eeb1b')
+            .then(response => response.json())
+            .then(data => {
+                var markers = [];
+                data.forEach(building => {
+                    var latlng = L.latLng(building.latitude, building.longitude);
+                    var markerColor = 'blue';
+
+                    // Check distance from existing markers
+                    markers.forEach(existingMarker => {
+                        if (calculateDistance(latlng, existingMarker.getLatLng()) < 100) {
+                            markerColor = 'red'; // If markers are within 100 meters, change color to red
+                        }
+                    });
+
+                    var marker = L.marker(latlng, { icon: L.divIcon({ className: 'custom-marker', iconSize: [20, 20], html: '<div style="background-color:' + markerColor + '"></div>' }) }).addTo(map);
+                    markers.push(marker);
+                    marker.bindPopup(`<b>${building.name}</b><br>${building.address}`);
+                });
+            });
+    </script>
+</body>
+
+</html>
