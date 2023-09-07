@@ -1,76 +1,62 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <title>Building Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <style>
-        #map { height: 100vh; }
+        /* Add this to your CSS file */
+        .red-marker {
+            background-color: red;
+            border: 1px solid #000;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+        }
     </style>
 </head>
+
 <body>
-    <div id="map"></div>
+    <div id="map" style="height: 500px;"></div>
+    <script>// Initialize the map
+        const map = L.map('map').setView([44.305584, -69.976561], 8); // Set the initial view
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        // Initialize the map
-        var map = L.map('map').setView([0, 0], 2); // Set initial view to [0, 0] and zoom level 2
-
-        // Add OpenStreetMap tile layer to the map
+        // Create a tile layer for the map
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Fetch the data from the API
+        // Fetch data from the API
         fetch('https://api.npoint.io/f26432e9e880999eeb1b')
             .then(response => response.json())
             .then(data => {
-                // Loop through the data
-                for (let building of data) {
-                    // Create a marker for each building
-                    var marker = L.marker([building.lat, building.lng]);
+                // Loop through the features and create markers
+                data.features.forEach(feature => {
+                    const lat = feature.geometry.coordinates[1];
+                    const lon = feature.geometry.coordinates[0];
 
-                    // Check if there are any nearby markers
-                    var nearbyMarkers = data.filter(b => {
-                        return b !== building && getDistance(b, building) < 0.01; // Change this value to adjust the "nearby" distance
+                    // Create a marker for each feature
+                    const marker = L.marker([lat, lon]).addTo(map);
+
+                    // Check if markers are nearby
+                    // You can use a function to calculate the distance between markers
+                    // If they are nearby, change the marker color to red
+                    // Otherwise, keep it blue
+                    // Here, we assume a threshold of 0.01 degrees (adjust as needed)
+                    data.features.forEach(otherFeature => {
+                        if (feature !== otherFeature) {
+                            const otherLat = otherFeature.geometry.coordinates[1];
+                            const otherLon = otherFeature.geometry.coordinates[0];
+                            const distance = Math.sqrt((lat - otherLat) ** 2 + (lon - otherLon) ** 2);
+                            if (distance < 0.01) {
+                                marker.setIcon(L.divIcon({ className: 'red-marker' }));
+                            }
+                        }
                     });
-
-                    // If there are nearby markers, set the color to red
-                    if (nearbyMarkers.length > 0) {
-                        marker.setIcon(L.icon({
-                            iconUrl: 'path/to/red/marker.png', // Replace with the path to your red marker image
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                        }));
-                    }
-
-                    // Add the marker to the map
-                    marker.addTo(map);
-                }
+                });
             });
-
-        // Function to get the distance between two points
-        function getDistance(a, b) {
-            var lat1 = a.lat;
-            var lon1 = a.lng;
-            var lat2 = b.lat;
-            var lon2 = b.lng;
-
-            var R = 6371; // Radius of the earth in km
-            var dLat = deg2rad(lat2-lat1);
-            var dLon = deg2rad(lon2-lon1); 
-            var a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2)
-                ; 
-            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            var d = R * c; // Distance in km
-            return d;
-        }
-
-        function deg2rad(deg) {
-            return deg * (Math.PI/180)
-        }
     </script>
 </body>
+
 </html>
